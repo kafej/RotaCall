@@ -38,7 +38,7 @@
                 var monthhs = ["Sty","Lut","Mar","Kwi","Maj","Cze","Lip","Sie","Wrz","Paź","Lis","Gru"];
                 var plp = "Puste";
                 var zaj = 'Już zajęte przez: ';
-                var wyc = 'Czy napewno wycofać prośbe o zwolnieniu dyżuru ?';
+                var wyc = 'Czy na pewno wycofać prośbe o zwolnieniu dyżuru ?';
                 var tw = 'Tak, Wysyłam';
                 var nn = 'Nie';
                 var pzwo = 'Prośba o zwolnienie dyżuru została cofnięta.';
@@ -48,11 +48,28 @@
                 var dpow = 'Musisz podać, jakiś powód...';
                 var dpro = 'Prośba o zwolnienie dyżuru';
                 var mn = 'Nowy';
+                var cbra = 'Wybierz oddział';
+                var pcbra = 'Proszę wybrać oddział';
+                var tbran = 'Nazwa';
+                var febran = 'Np. SOR - OBS';
             } else if (lang == 'EN') {
                 var weekdayy = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
                 var monthh = ["January","February","March","April","May","June","July","August","September","October","November","December"];
                 var plp = "Empty";
                 var mn = 'New';
+                var zaj = "It's already taken by: ";
+                var wyc = 'Are you sure you want to withdraw the request ?';
+                var tw = 'Yes, Send';
+                var nn = 'No';
+                var pzwo = 'The request for the duty was withdrawn.';
+                var zapmail = 'Do you want to send an email request for the release of on-call?';
+                var dpow = 'You have to give, some reason...';
+                var dpro = 'Request for the release of on-call';
+                var mn = 'New';
+                var cbra = 'Choose a branch';
+                var pcbra = 'Please choose a branch';
+                var tbran = 'Title';
+                var febran = 'E.g. SOR - OBS';
             } else {
 
             }
@@ -115,7 +132,7 @@
                     }
                 });
                 const swalDzialMain = swal({
-                    title: 'Wybierz oddział',
+                    title: cbra,
                     input: 'select',
                     allowEscapeKey: false,
                     allowOutsideClick: false,
@@ -126,7 +143,7 @@
                         }, 1000);
                     },
                     inputOptions: dzi,
-                    inputPlaceholder: 'Wybierz oddział',
+                    inputPlaceholder: cbra,
                     inputValidator: (value) => {
                         return new Promise((resolve) => {
                             dzif = value;
@@ -157,10 +174,24 @@
                             czasdyzdlugi = t11+'-'+t12;
 
                             if (value === 'Sekcja IT') {
-                                $(this).tabMain();
-                                resolve()
+                                $.ajax({
+                                    type: "POST",
+                                    async: false,
+                                    url: "baza.php",
+                                    dataType: "json",
+                                    data:{action:"userl"},
+                                    success: function(data) {
+                                        $lt = data;
+                                    }
+                                });
+                                if ($lt === 'p01161' || $lt === 'p01198' || $lt === 'p01197' || $lt === 'p00396' || $lt === 'p00151' || $lt === 'p00481') {
+                                    $(this).tabMain();
+                                    resolve()
+                                } else {
+                                    resolve('Dostęp zabroniony')
+                                }
                             } else if (value === '') {
-                                resolve('Proszę wybrać oddział')
+                                resolve(pcbra)
                             } else if (value === mn) {
                                 swal.mixin({
                                     input: 'text',
@@ -172,9 +203,9 @@
                                     progressSteps: ['1', '2']
                                     }).queue([
                                     {
-                                        title: 'Nazwa',
+                                        title: tbran,
                                         inputClass: 'browser-default',
-                                        inputPlaceholder: 'Np. SOR - OBS',
+                                        inputPlaceholder: febran,
                                     },
                                     {
                                         title: 'Ilość osób dyżurujących',

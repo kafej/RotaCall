@@ -106,6 +106,11 @@ if($action=="dyzurujacy") {
     echo json_encode($array);
 }
 
+if($action=="userl") {
+
+    echo json_encode($username1);
+}
+
 if($action=="czas") {
     $sql21 = "SELECT * FROM users WHERE user='$username1'";
     $result21 = $conn->query($sql21);
@@ -200,7 +205,7 @@ if($action=="specjalna") {
     $mail->Port = 587;
 
     // Add a recipient
-    $mail->addAddress('michal.zbyl@');
+    $mail->addAddress('@');
 
     // Email subject
     $mail->Subject = "Dyzur - Kierownik Dyżury ruszył. DyżurFiltr";
