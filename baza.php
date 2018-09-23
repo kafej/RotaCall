@@ -58,6 +58,11 @@ if (strpos($namdyzu, $surn) !== false) {
     $namemail = $surnemail;
 }
 
+if($action=="modal") {
+    $sql21 = "UPDATE users SET info='tak' WHERE user='$username1'";
+    $result21 = $conn->query($sql21);
+}
+
 if($action=="start") {
     $sql21 = "SELECT * FROM users WHERE user='$username1'";
     $result21 = $conn->query($sql21);
@@ -83,7 +88,7 @@ if($action=="ludki") {
 }
 
 if($action=="dzi") {
-    $sql21 = "SELECT dzialy FROM godziny";
+    $sql21 = "SELECT dzialy FROM godziny ORDER BY dzialy";
     $result21 = $conn->query($sql21);
 
     $array = array();
@@ -161,9 +166,9 @@ if($action=="mail") {
 
     // SMTP configuration
     $mail->isSMTP();
-    $mail->Host = 'poczta.';
+    $mail->Host = '';
     $mail->SMTPAuth = true;
-    $mail->Username = 'skrypty@';
+    $mail->Username = '';
     $mail->Password = '';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
@@ -197,24 +202,24 @@ if($action=="specjalna") {
 
     // SMTP configuration
     $mail->isSMTP();
-    $mail->Host = 'poczta.';
+    $mail->Host = '';
     $mail->SMTPAuth = true;
-    $mail->Username = 'skrypty@';
+    $mail->Username = '';
     $mail->Password = '';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 
     // Add a recipient
-    $mail->addAddress('@');
+    $mail->addAddress('');
 
     // Email subject
-    $mail->Subject = "Dyzur - Kierownik Dyżury ruszył. DyżurFiltr";
+    $mail->Subject = "Dyzur - Kierownik Dyżury ruszył. $dyzdata. DyżurFiltr";
 
     // Set email format to HTML
     $mail->isHTML(true);
 
     // Email body content
-    $mailContent = "<h1>Kierownik Dyżury ruszył.</h1>";
+    $mailContent = "<h1>Kierownik Dyżury ruszył. $dyzdata</h1>";
     $mail->Body = $mailContent;
     $mail->CharSet = "UTF-8";
 
@@ -229,9 +234,9 @@ if($action=="emailwyslij") {
 
     // SMTP configuration
     $mail->isSMTP();
-    $mail->Host = 'poczta.';
+    $mail->Host = '';
     $mail->SMTPAuth = true;
-    $mail->Username = 'skrypty@';
+    $mail->Username = '';
     $mail->Password = '';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
@@ -239,7 +244,7 @@ if($action=="emailwyslij") {
     // Add a recipient
     $mail->addAddress($emaild);
 
-    $mail->setFrom("skrypty@");
+    $mail->setFrom("");
 
     // Email subject
     $mail->Subject = "Dyzur $dzif na miesiąc $emaildyzm. DyżurFiltr";
@@ -263,9 +268,9 @@ if($action=="mailremove") {
 
     // SMTP configuration
     $mail->isSMTP();
-    $mail->Host = 'poczta.';
+    $mail->Host = '';
     $mail->SMTPAuth = true;
-    $mail->Username = 'skrypty@';
+    $mail->Username = '';
     $mail->Password = '';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
@@ -389,6 +394,24 @@ if($action=="add2") {
     }
 }
 
+if($action=="mitsu") {
+    $sqla1 = "SELECT * FROM dyzur WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+    $resula1 = $conn->query($sqla1);
+    
+    while ($row=mysqli_fetch_row($resula1)) {
+        if ($row[2]==NULL) {
+            $sqlff = "UPDATE dyzur SET user='$namdyzu' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+            $resultff = $conn->query($sqlff);
+        } elseif ($row[3]==$NULL) {
+            $sqlff = "UPDATE dyzur SET user2='$namdyzu' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+            $resultff = $conn->query($sqlff);
+        } elseif ($row[8]==$NULL) {
+            $sqlff = "UPDATE dyzur SET user3='$namdyzu' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+            $resultff = $conn->query($sqlff);
+        }
+    }
+}
+
 if($action=="addnd") {
     $sql = "INSERT INTO godziny (dzialy,normalny,dlugi,user,ludki) VALUES ('$rota1', '$czasdyzdlugi', '$czasdyz', '$namdyzu', '$rota2')";
     $conn->query($sql);
@@ -436,7 +459,30 @@ if($action=="delete") {
     
     while ($row=mysqli_fetch_row($resuld1))
       {
-        if ($row[3]) {
+        if ($row[8]) {
+            if ($row[2]==$namdyzu) {
+                $sqlff = "UPDATE dyzur SET user='$row[3]' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+                $resultff = $conn->query($sqlff);
+
+                $sqlff = "UPDATE dyzur SET user2='$row[8]' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+                $resultff = $conn->query($sqlff);
+
+                $sqlfff = "UPDATE dyzur SET user3='' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+                $resultfff = $conn->query($sqlfff);
+            } elseif ($row[3]==$namdyzu) {
+                $sqlff = "UPDATE dyzur SET user='$row[2]' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+                $resultff = $conn->query($sqlff);
+
+                $sqlff = "UPDATE dyzur SET user2='$row[8]' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+                $resultff = $conn->query($sqlff);
+
+                $sqlfff = "UPDATE dyzur SET user3='' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+                $resultfff = $conn->query($sqlfff);
+            } elseif ($row[8]==$namdyzu) {
+                $sqlff = "UPDATE dyzur SET user3='' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
+                $resultff = $conn->query($sqlff);
+            }
+        } elseif ($row[3]) {
             if ($row[2]==$namdyzu) {
                 $sqlff = "UPDATE dyzur SET user='$row[3]' WHERE id_dyzur='$iddyzu' AND dzial='$dzif'";
                 $resultff = $conn->query($sqlff);

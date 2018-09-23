@@ -217,6 +217,12 @@ div.title {
 	padding: 0px !important;
 	position: fixed;
 }
+#modal1 img {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	width: 50%;
+}
 .kafej {
 	max-width: 60px;
 	right: 8px;

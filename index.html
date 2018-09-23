@@ -106,6 +106,7 @@
                 success: function(data) {
                     $.each(data, function(index, value) {
                         $v = value.name;
+                        $modalt = value.info;
                         $v1 = $v.substring(0, 1);
                         $v2 = $v.split(" ")[1];
                         $vatrate = $v1 + "." + $v2;
@@ -125,10 +126,10 @@
                     dataType: "json",
                     data:{action:"dzi"},
                     success: function(data) {
+                        dzi[mn] = mn;
                         $.each(data, function(index, value) {
                             dzi[value.dzialy] = value.dzialy;
                         })
-                        dzi[mn] = mn;
                     }
                 });
                 const swalDzialMain = swal({
@@ -213,7 +214,8 @@
                                         inputClass: 'browser-default',
                                         inputOptions: {
                                             'jedna': 'Jedna',
-                                            'dwie': 'Dwie'
+                                            'dwie': 'Dwie',
+                                            'trzy': 'Trzy'
                                         }
                                     }
                                     ]).then((result) => {
@@ -574,6 +576,24 @@
                 $oddzial = dzif;
                 $ludki = '';
                 $(this).dniwolne();
+                $('.tooltipped').tooltip();
+                $('.modal').modal({
+                    onCloseEnd: function() { 
+                        $.ajax({
+                            url: 'baza.php',
+                            type: 'POST',
+                            data: { action:"modal" }
+                        });
+                    }
+                });
+
+                if ($modalt !== "tak") {
+                    setTimeout(
+                    function() 
+                    {
+                        $('.modal').modal('open');
+                    }, 1500);
+                }
 
                 $.ajax({
                     type: "POST",
@@ -625,19 +645,19 @@
                     var dyzdzien = $(this).find('span').text();
 
                     if (dyzdziennumebr == '0') {
-                        dyzdzienfull = weekdayy[0];
-                    } else if (dyzdziennumebr == '1') {
                         dyzdzienfull = weekdayy[1];
-                    } else if (dyzdziennumebr == '2') {
+                    } else if (dyzdziennumebr == '1') {
                         dyzdzienfull = weekdayy[2];
-                    } else if (dyzdziennumebr == '3') {
+                    } else if (dyzdziennumebr == '2') {
                         dyzdzienfull = weekdayy[3];
-                    } else if (dyzdziennumebr == '4') {
+                    } else if (dyzdziennumebr == '3') {
                         dyzdzienfull = weekdayy[4];
-                    } else if (dyzdziennumebr == '5') {
+                    } else if (dyzdziennumebr == '4') {
                         dyzdzienfull = weekdayy[5];
-                    } else {
+                    } else if (dyzdziennumebr == '5') {
                         dyzdzienfull = weekdayy[6];
+                    } else {
+                        dyzdzienfull = weekdayy[7];
                     }
 
                     var dyzdata = dyzdzienfull + " " + dyzdzien + " " + dyzmonth;
@@ -649,7 +669,7 @@
                                     $.ajax({
                                         url: 'baza.php',
                                         type: 'POST',
-                                        data: { action:"specjalna", iddyzu : id, namdyzu : $vatrate }
+                                        data: { action:"specjalna", iddyzu : id, dyzdata : dyzdata, namdyzu : $vatrate }
                                     });
                                 }
                                 $(this).find("p").empty();
@@ -687,14 +707,46 @@
                                 });
                             } else {
                                 if (textt.indexOf($vatrate) !== -1) {
-                                    if ($ludki == 'dwie') {
+                                    if ($ludki == 'trzy') {
+                                        var strf = $(this).find("p").text();
+                                        var resf = strf.split(" ");
+                                        if (resf[2]) {
+                                            if (resf[2] == $vatrate) {
+                                                $(this).find("p").empty();
+                                                $(this).find("p").append(resf[0]);
+                                                $(this).find("p").append(" ");
+                                                $(this).find("p").append(resf[1]);
+                                            } else if (resf[1] == $vatrate) {
+                                                $(this).find("p").empty();
+                                                $(this).find("p").append(resf[0]);
+                                                $(this).find("p").append(" ");
+                                                $(this).find("p").append(resf[2]);
+                                            } else {
+                                                $(this).find("p").empty();
+                                                $(this).find("p").append(resf[2]);
+                                            }
+                                        } else if (resf[1]) {
+                                            if (resf[1] == $vatrate) {
+                                                $(this).find("p").empty();
+                                                $(this).find("p").append(resf[0]);
+                                            } else {
+                                                $(this).find("p").empty();
+                                                $(this).find("p").append(resf[1]);
+                                            }
+                                        } else {
+                                            $(this).find("p").empty();
+                                            $(this).find(".zmiana").empty();
+                                            $(this).find("p").append(plp);
+                                            $(this).find('p').append('<div class="bx2"></div>');
+                                        }
+                                    } else if ($ludki == 'dwie') {
                                         var strf = $(this).find("p").text();
                                         var resf = strf.split(" ");
                                         if (resf[1]) {
                                             if (resf[1] == $vatrate) {
                                                 $(this).find("p").empty();
                                                 $(this).find("p").append(resf[0]);
-                                            } else{
+                                            } else {
                                                 $(this).find("p").empty();
                                                 $(this).find("p").append(resf[1]);
                                             }
@@ -719,7 +771,167 @@
                                         data: { action:"delete", iddyzu : id, namdyzu : $vatrate, dzif : dzif }
                                     });
                                 } else {
-                                    if ($ludki == 'dwie') {
+                                    if ($ludki == 'trzy') {
+                                        $.ajax({
+                                            type: "POST",
+                                            url: "baza.php",
+                                            dataType: "json",
+                                            data:{action:"addcheck", iddyzu : id, namdyzu : $vatrate, dzif : dzif },
+                                            success: function(data) {
+                                                $.each(data, function(index, value) {
+                                                    if (value.id_dyzur) {
+                                                        if (value.user) {
+                                                            if (value.user2 && value.user3) {
+                                                                $valid = '#' + value.id_dyzur;
+                                                                if ($($valid).find("div").hasClass("zmiana")) {
+                                                                    Swal({
+                                                                        title: wyc,
+                                                                        type: 'question',
+                                                                        showCancelButton: true,
+                                                                        confirmButtonText: tw,
+                                                                        cancelButtonText: nn
+                                                                        }).then((result) => {
+                                                                        if (result.value) {
+                                                                            swal({
+                                                                                position: 'top',
+                                                                                type: 'success',
+                                                                                title: pzwo,
+                                                                                showConfirmButton: false,
+                                                                                timer: 2500
+                                                                            })
+
+                                                                            $($valid).find(".zmiana").empty().removeClass();
+                                                                            $.ajax({
+                                                                                url: 'baza.php',
+                                                                                type: 'POST',
+                                                                                data: { action:"wycofaj", iddyzu : id, namdyzu : $vatrate, dzif : dzif }
+                                                                            });
+
+                                                                            $.ajax({
+                                                                                url: 'baza.php',
+                                                                                type: 'POST',
+                                                                                data: { action:"mailremove", iddyzu : id, namdyzu : textt, dyzdata : dyzdata, dzif : dzif }
+                                                                            });
+                                                                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                                                            Swal(
+                                                                                anu,
+                                                                                proanu,
+                                                                                'error'
+                                                                            )
+                                                                        }
+                                                                    })
+                                                                } else {
+                                                                    $.ajax({
+                                                                        type: "POST",
+                                                                        url: "baza.php",
+                                                                        dataType: "json",
+                                                                        data:{action:"addcheck", iddyzu : id, namdyzu : $vatrate, dzif : dzif },
+                                                                        success: function(data) {
+                                                                            $.each(data, function(index, value) {
+                                                                                if (value.id_dyzur) {
+                                                                                    Swal({
+                                                                                        title: zapmail,
+                                                                                        type: 'question',
+                                                                                        input: 'textarea',
+                                                                                        inputPlaceholder: dpow,
+                                                                                        inputValue: dpro,
+                                                                                        showCancelButton: true,
+                                                                                        confirmButtonText: tw,
+                                                                                        cancelButtonText: nn
+                                                                                        }).then((result) => {
+                                                                                        if (result.value) {
+                                                                                            swal({
+                                                                                                position: 'top',
+                                                                                                type: 'success',
+                                                                                                title: 'Prośba o zamiane w dniu '+ dyzdata +' została wysłana.',
+                                                                                                showConfirmButton: false,
+                                                                                                timer: 2500
+                                                                                            })
+                                                                                            var swaltext = JSON.stringify(result.value);
+
+                                                                                            $.ajax({
+                                                                                                url: 'baza.php',
+                                                                                                type: 'POST',
+                                                                                                data: { action:"mail", iddyzu : id, namdyzu : textt, textdyz : swaltext, dyzdata : dyzdata, dzif : dzif }
+                                                                                            });
+
+                                                                                            $valid = '#' + value.id_dyzur;
+                                                                                            $vatratefinal = "<div class='zmiana'>" + $vatrate + "</div>";
+                                                                                            $($valid).append($vatratefinal);
+                                                                                            $.ajax({
+                                                                                                url: 'baza.php',
+                                                                                                type: 'POST',
+                                                                                                data: { action:"update", iddyzu : id, namdyzu : $vatrate, textdyz : swaltext, dyzdata : dyzdata, dzif : dzif }
+                                                                                            });
+
+                                                                                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                                                                            Swal(
+                                                                                                'Anulowane',
+                                                                                                'Wiadomość nie została wysłana',
+                                                                                                'error'
+                                                                                            )
+                                                                                        } else {
+                                                                                            Swal(
+                                                                                                'Anulowane',
+                                                                                                'Wiadomość nie została wysłana',
+                                                                                                'error'
+                                                                                            )
+                                                                                        }
+                                                                                    })
+                                                                                }
+                                                                            })
+                                                                        }
+                                                                    });
+                                                                }
+                                                            } else {
+                                                                $valid = '#' + value.id_dyzur;
+                                                                $($valid).find("p").empty();
+                                                                if (value.user2) {
+                                                                    if ($ludki == 'dwie') {
+                                                                        $($valid).find("p").append(value.user + ' ' + $vatrate);
+                                                                    } else {
+                                                                        $($valid).find("p").append(value.user + ' ' + value.user2 + ' ' + $vatrate);
+                                                                    }
+                                                                } else {
+                                                                    $($valid).find("p").append(value.user + ' ' + $vatrate);
+                                                                }
+                                                                $($valid).find("p").append('<div class="bx"></div>');
+                                                                $(this).iloscDyzurow();
+                                                                $(this).dyzurujacy();
+                                                            }
+                                                            
+                                                            if ($ludki == 'trzy') {
+                                                                $.ajax({
+                                                                    url: 'baza.php',
+                                                                    type: 'POST',
+                                                                    data: { action:"mitsu", iddyzu : id, namdyzu : $vatrate, dyzdata : dyzdata, datadzial : $oddzial, dzif : dzif }
+                                                                });
+                                                            } else {
+                                                                $.ajax({
+                                                                    url: 'baza.php',
+                                                                    type: 'POST',
+                                                                    data: { action:"add2", iddyzu : id, namdyzu : $vatrate, dyzdata : dyzdata, datadzial : $oddzial, dzif : dzif }
+                                                                });
+                                                            }
+                                                        } else {
+                                                            swal({
+                                                                type: 'error',
+                                                                title: 'Oops...',
+                                                                text: zaj + value.user
+                                                            })
+                                                        }
+                                                    }
+                                                })
+                                            },
+                                            error: function(data) {
+                                                $.ajax({
+                                                    url: 'baza.php',
+                                                    type: 'POST',
+                                                    data: { action:"add", iddyzu : id, namdyzu : $vatrate, dyzdata : dyzdata, datadzial : $oddzial, dzif : dzif }
+                                                });
+                                            }
+                                        });
+                                    } else if ($ludki == 'dwie') {
                                         $.ajax({
                                             type: "POST",
                                             url: "baza.php",
@@ -834,17 +1046,33 @@
                                                             } else {
                                                                 $valid = '#' + value.id_dyzur;
                                                                 $($valid).find("p").empty();
-                                                                $($valid).find("p").append(value.user + ' ' + $vatrate);
+                                                                if (value.user2) {
+                                                                    if ($ludki == 'dwie') {
+                                                                        $($valid).find("p").append(value.user + ' ' + $vatrate);
+                                                                    } else {
+                                                                        $($valid).find("p").append(value.user + ' ' + value.user2 + ' ' + $vatrate);
+                                                                    }
+                                                                } else {
+                                                                    $($valid).find("p").append(value.user + ' ' + $vatrate);
+                                                                }
                                                                 $($valid).find("p").append('<div class="bx"></div>');
                                                                 $(this).iloscDyzurow();
                                                                 $(this).dyzurujacy();
                                                             }
                                                             
-                                                            $.ajax({
-                                                                url: 'baza.php',
-                                                                type: 'POST',
-                                                                data: { action:"add2", iddyzu : id, namdyzu : $vatrate, dyzdata : dyzdata, datadzial : $oddzial, dzif : dzif }
-                                                            });
+                                                            if ($ludki == 'trzy') {
+                                                                $.ajax({
+                                                                    url: 'baza.php',
+                                                                    type: 'POST',
+                                                                    data: { action:"mitsu", iddyzu : id, namdyzu : $vatrate, dyzdata : dyzdata, datadzial : $oddzial, dzif : dzif }
+                                                                });
+                                                            } else {
+                                                                $.ajax({
+                                                                    url: 'baza.php',
+                                                                    type: 'POST',
+                                                                    data: { action:"add2", iddyzu : id, namdyzu : $vatrate, dyzdata : dyzdata, datadzial : $oddzial, dzif : dzif }
+                                                                });
+                                                            }
                                                         } else {
                                                             swal({
                                                                 type: 'error',
@@ -989,6 +1217,9 @@
                             $($valid).find("p").append(value.user);
                             if (value.user2) {
                                 $($valid).find("p").append(' ' + value.user2);
+                            }
+                            if (value.user3) {
+                                $($valid).find("p").append(' ' + value.user3);
                             }
                             $($valid).find('p').append('<div class="bx2"></div>');
                             if (value.upd) {
@@ -1384,9 +1615,29 @@
 
 <div class="cal"></div>
 
+<div id="modal1" class="modal modal-fixed-footer">
+    <div class="modal-content">
+      <h4>Informacje - Proszę się zapoznać - Wyświetli się tylko raz</h4>
+      <img src="lb.jpg" alt="lb" height="auto">
+      <p>Po wejściu w Ustawienia (patrz obrazek) mamy możliwość:
+        <ul>
+            <li>- Zmienić godziny dyżurów krótkich</li>
+            <li>- Zmienić godziny dyżurów długich i Świątecznych</li>
+            <li>- Sprawdzić Kto i ile dyżuruje w wybranym miesiącu</li>
+            <li>- Dodać dni wolne/Świąteczne</li>
+            <li>- Usunąć dni wolne/Świąteczne</li>
+            <li>- <b>Wysłać tabelkę z wybranego miesiąca na podany adres Email</b></li>
+        </ul>
+      </p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect waves-blue btn-flat">Zamknij</a>
+    </div>
+</div>
+
 <div class="menu card sticky-action">
     <span class="card-title activator grey-text text-darken-4">
-        <a id="menum" class="btn-floating pulse cyan right"><i id="menumin" class="material-icons right">menu</i></a>
+        <a id="menum" class="btn-floating tooltipped pulse cyan right" data-position="left" data-tooltip="Ustawienia"><i id="menumin" class="material-icons right">menu</i></a>
     </span>
     <div class="logosz">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 61.960114 37.403278" style="">
